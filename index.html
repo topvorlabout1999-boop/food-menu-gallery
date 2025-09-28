@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Food Delivery UI Kit — Menu & Order</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#fff; --muted:#6b7280; --accent:#ff6b35; --success:#16a34a;
+      --glass: rgba(255,255,255,0.6);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:linear-gradient(180deg,#eef2ff 0%, #f5f7fb 100%); color:#111;
+      min-height:100vh; padding:28px;
+    }
+    .app{
+      display:flex; gap:20px; max-width:1200px; margin:0 auto;
+    }
+    .left{
+      flex:1;
+    }
+    header{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px}
+    .brand{
+      display:flex; gap:12px; align-items:center;
+    }
+    .logo{
+      width:56px; height:56px; background:var(--glass); border-radius:12px; padding:6px; display:grid; place-items:center;
+      box-shadow:0 6px 18px rgba(16,24,40,0.06);
+    }
+    .logo img{width:40px; height:40px; object-fit:cover; border-radius:8px}
+    h1{font-size:20px; margin:0}
+    p.lead{margin:0; color:var(--muted); font-size:13px}
+    .filters{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap}
+    .chip{background:var(--card); padding:8px 12px; border-radius:999px; font-size:13px; color:var(--muted); box-shadow:0 4px 14px rgba(16,24,40,0.04); cursor:pointer}
+    .grid{
+      display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:16px;
+    }
+    .card{
+      background:var(--card); border-radius:12px; overflow:hidden; box-shadow:0 8px 30px rgba(16,24,40,0.06);
+      display:flex; flex-direction:column;
+    }
+    .thumb{height:140px; overflow:hidden}
+    .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+    .meta{padding:12px; display:flex; flex-direction:column; gap:8px}
+    .title{display:flex; justify-content:space-between; align-items:center}
+    .title h3{margin:0; font-size:15px}
+    .desc{color:var(--muted); font-size:13px; margin-top:2px}
+    .meta-bottom{display:flex; justify-content:space-between; align-items:center; margin-top:8px}
+    .price{font-weight:700; color:var(--accent)}
+    .btn{background:var(--accent); color:#fff; border:none; padding:8px 10px; border-radius:8px; cursor:pointer; font-weight:600}
+    .btn.ghost{background:transparent; color:var(--accent); border:1px solid rgba(255,107,53,.12)}
+    .right{
+      width:360px; flex-shrink:0;
+    }
+    .panel{
+      background:var(--card); border-radius:12px; padding:18px; box-shadow:0 12px 40px rgba(16,24,40,0.06);
+      position:sticky; top:28px;
+    }
+    .cart-item{display:flex; gap:12px; align-items:center; margin-bottom:12px}
+    .cart-item img{width:56px; height:56px; object-fit:cover; border-radius:8px}
+    .cart-meta{flex:1}
+    .qty{display:flex; gap:6px; align-items:center}
+    .qty button{background:#f3f4f6; border:none; padding:6px 8px; border-radius:6px; cursor:pointer}
+    .muted{color:var(--muted); font-size:13px}
+    .hr{height:1px; background:#eef2ff; margin:12px 0; border-radius:2px}
+    .place{display:flex; gap:10px; align-items:center; justify-content:space-between}
+    .total{font-weight:800; font-size:18px}
+    .small{font-size:13px; color:var(--muted)}
+    footer.note{margin-top:10px; font-size:12px; color:var(--muted)}
+    /* responsive */
+    @media (max-width:980px){
+      .app{flex-direction:column; padding:18px}
+      .right{width:100%}
+      .panel{position:relative; top:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="left">
+      <header>
+        <div class="brand">
+          <div class="logo"><img src="https://images.unsplash.com/photo-1546069901-eacef0df6022?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=b8676afd2d7556fb45b1b10b5e5f6a06" alt="logo"></div>
+          <div>
+            <h1>FreshBite</h1>
+            <p class="lead">Fast delivery • Local favorites</p>
+          </div>
+        </div>
+        <div>
+          <button class="btn ghost" onclick="clearCart()">Clear Cart</button>
+        </div>
+      </header>
+
+      <div class="filters">
+        <div class="chip">Most popular</div>
+        <div class="chip">A la carte</div>
+        <div class="chip">Drinks</div>
+        <div class="chip">Desserts</div>
+        <div class="chip">Deals</div>
+      </div>
+
+      <section>
+        <h2 style="margin:0 0 10px 0">A la carte — 20 items</h2>
+        <div id="menuGrid" class="grid"></div>
+      </section>
+
+      <section style="margin-top:18px">
+        <h2 style="margin:0 0 10px 0">Drinks</h2>
+        <div id="drinksGrid" class="grid"></div>
+      </section>
+
+      <section style="margin-top:18px">
+        <h2 style="margin:0 0 10px 0">Desserts</h2>
+        <div id="dessertsGrid" class="grid"></div>
+      </section>
+
+    </div>
+
+    <aside class="right">
+      <div class="panel">
+        <h3 style="margin:0 0 8px 0">Your Order</h3>
+        <div id="cartList" style="min-height:110px"></div>
+
+        <div class="hr"></div>
+        <div class="small">Delivery fee</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px">
+          <div class="muted">Standard (30-45 min)</div>
+          <div class="muted">$3.50</div>
+        </div>
+
+        <div class="hr"></div>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div class="small">Subtotal</div>
+            <div id="subtotal" class="muted">$0.00</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div class="small">Delivery</div>
+            <div id="delivery" class="muted">$3.50</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div class="total">Total</div>
+            <div id="totalPrice" class="total">$0.00</div>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:8px">
+            <input id="customerName" type="text" placeholder="Your name" style="flex:1; padding:10px; border-radius:8px; border:1px solid #eef2ff">
+            <input id="customerPhone" type="tel" placeholder="Phone" style="width:120px; padding:10px; border-radius:8px; border:1px solid #eef2ff">
+          </div>
+
+          <button class="btn" onclick="placeOrder()" style="width:100%; margin-top:6px">Place Order</button>
+        </div>
+
+        <footer class="note">Tip: click Add to include items. Edit quantities in the cart.</footer>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // Data sets: 20 a la carte, drinks, desserts
+    const menu = [
+      {id:'m1', name:'Grilled Chicken Sandwich', desc:'Juicy grilled chicken, lettuce, pickles, special sauce', price:9.99, img:'https://www.cucinabyelena.com/wp-content/uploads/2024/03/Ultimate-Grilled-Chicken-Sandwich-Recipe-24.jpg'},
+      {id:'m2', name:'Classic Cheeseburger', desc:'Beef patty, cheddar, onion, tomato', price:11.49, img:'https://rhubarbandcod.com/wp-content/uploads/2022/06/The-Classic-Cheeseburger-1.jpg'},
+      {id:'m3', name:'Margherita Pizza', desc:'Fresh basil, tomato sauce, mozzarella', price:13.50, img:'https://www.foodandwine.com/thmb/7BpSJWDh1s-2M2ooRPHoy07apq4=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/mozzarella-pizza-margherita-FT-RECIPE0621-11fa41ceb1a5465d9036a23da87dd3d4.jpg'},
+      {id:'m4', name:'Caesar Salad', desc:'Romaine, parmesan, crunchy croutons', price:8.50, img:'https://itsavegworldafterall.com/wp-content/uploads/2023/04/Avocado-Caesar-Salad-FI.jpg'},
+      {id:'m5', name:'Spicy Ramen Bowl', desc:'Rich broth, noodles, soft egg', price:12.75, img:'https://peasandcrayons.com/wp-content/uploads/2020/04/spicy-vegetarian-ramen-recipe-3.jpg'},
+      {id:'m6', name:'Fish Tacos (2 pcs)', desc:'Crispy fish, slaw, lime crema', price:10.25, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf71G0W9AYct8PZDAuakM4k4YrT7VqBlF1xg&s'},
+      {id:'m7', name:'Steak Frites', desc:'Seared steak, herb butter, fries', price:18.00, img:'https://foodmymuse.com/wp-content/uploads/2024/03/SteakFrites3-500x500.jpg'},
+      {id:'m8', name:'Veggie Buddha Bowl', desc:'Quinoa, roasted veggies, tahini', price:11.00, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXCw8yBK449eFyWYOFLXsdhQQZ_48o4EEuow&s'},
+      {id:'m9', name:'BBQ Pulled Pork', desc:'Slow-cooked pork, coleslaw, bun', price:12.00, img:'https://static01.nyt.com/images/2020/08/30/dining/ml-bbq-pork/ml-bbq-pork-mediumSquareAt3X-v3.jpg'},
+      {id:'m10', name:'Pesto Pasta', desc:'Tossed with pine nuts and parmesan', price:10.50, img:'https://www.foodandwine.com/thmb/E_HnIOZhTcYeB6cf4FSie8vpyHs=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Panko-pesto-pasta-FT-RECIPE-0625-86b09a6f6cb341ccab83acb264e88a82.jpg'},
+      {id:'m11', name:'Shrimp Scampi', desc:'Garlic butter shrimp over linguine', price:15.00, img:'https://bakerbynature.com/wp-content/uploads/2023/02/shrimp-scampi-119.jpg'},
+      {id:'m12', name:'Falafel Wrap', desc:'Crunchy falafel, tahini, pickles', price:9.00, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPyUSqrcFI8HMayp8V6IhE4FM9pun9HA_FwA&s'},
+      {id:'m13', name:'Chicken Tikka Masala', desc:'Creamy tomato curry with basmati', price:13.25, img:'https://www.budgetbytes.com/wp-content/uploads/2015/12/Slow-Cooker-Chicken-Tikka-Masala-eat.jpg'},
+      {id:'m14', name:'Mediterranean Plate', desc:'Hummus, tabbouleh, grilled veg', price:11.50, img:'https://www.dinneratthezoo.com/wp-content/uploads/2019/12/mezze-platter-11.jpg'},
+      {id:'m15', name:'Sushi Roll (8 pcs)', desc:'Chef selection roll', price:14.50, img:'https://miamifreshfishmarket.com/cdn/shop/files/Untitled-23_7.png?v=1704403031&width=1946'},
+      {id:'m16', name:'Crispy Wings (6 pcs)', desc:'Choice of sauce: buffalo or honey', price:9.75, img:'https://134678221.cdn6.editmysite.com/uploads/1/3/4/6/134678221/54M7667UT4RLFWIFZGE6OJ47.jpeg'},
+      {id:'m17', name:'Loaded Nachos', desc:'Cheese, jalapeños, salsa, guacamole', price:10.95, img:'https://www.allrecipes.com/thmb/wGUnIfJKpAeYrdLL-qCsFDMUBXU=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/7489045loaded-beef-nachos-recipe-lutzflcat4x3-6c7ba4f55c514056894c920446cfd0b2.jpg'},
+      {id:'m18', name:'Avocado Toast', desc:'Sourdough, smashed avo, chili flakes', price:8.25, img:'https://foodsharingvegan.com/wp-content/uploads/2023/01/Rhodes-Avocado-Toast-Plant-Based-on-a-Budget-1-2.jpg'},
+      {id:'m19', name:'Lamb Kofta', desc:'Spiced lamb skewers with yogurt dip', price:13.00, img:'https://www.tamingtwins.com/wp-content/uploads/2024/04/lamb-koftas-9.jpg'}
+    ];
+
+    const drinks = [
+      {id:'d1', name:'Sparkling Water', price:2.50, img:'https://assets.bonappetit.com/photos/6859a72895750609dfc236f4/1:1/w_5652,h_5652,c_limit/BA-25-04-02-WEB_01_Seltzer%20Water%20Taste%20Test_0108_FINAL.jpg'},
+      {id:'d2', name:'Fresh Lemonade', price:3.25, img:'https://www.alifedelicious.com/wp-content/uploads/2019/09/Fresh-Squeezed-Homemade-Lemonade-Blog-2.jpg'},
+      {id:'d3', name:'Iced Coffee', price:3.50, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJsmCI2h0ywxh-AKME1QprYSATSkLpozgslg&s'},
+      {id:'d4', name:'Orange Juice', price:3.00, img:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Orangejuice.jpg/250px-Orangejuice.jpg'}
+    ];
+
+    const desserts = [
+      {id:'s1', name:'Chocolate Brownie', price:4.50, img:'https://icecreambakery.in/wp-content/uploads/2024/12/Brownie-Recipe-with-Cocoa-Powder.jpg'},
+      {id:'s2', name:'Vanilla Cheesecake', price:5.50, img:'https://stateofdinner.com/wp-content/uploads/2023/03/no-bake-vanilla-cheesecake-featured-2.jpg'},
+      {id:'s3', name:'Fruit Tart', price:4.00, img:'https://sugarspunrun.com/wp-content/uploads/2020/07/FRUIT-TART-PHOTOS-1-of-1.jpg'},
+      {id:'s4', name:'Ice Cream Scoop', price:2.75, img:'https://media.istockphoto.com/id/1162964737/photo/ice-cream-scoops-different-flavor-strawberry-chocolate-creamy-in-transparent-glass-ice-cream.jpg?s=612x612&w=0&k=20&c=iNg34WuoXqhWpuNTNJF__v7rwN4tTkgQS8nIFiZ45h4='}
+    ];
+
+    const deliveryFee = 3.50;
+
+    // Render helpers
+    function createCard(item, type){
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `
+        <div class="thumb"><img src="${encodeURI(item.img)}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%27800%27 height=%27600%27><rect width=%27100%25%27 height=%27100%25%27 fill=%27%23f3f4f6%27/><text x=%2750%25%27 y=%2750%25%27 font-size=%2724%27 text-anchor=%27middle%27 fill=%27%236b7280%27 dy=%27.3em%27>Image%20unavailable</text></svg>'"></div>
+        <div class="meta">
+          <div class="title">
+            <h3>${escapeHtml(item.name)}</h3>
+            <div class="price">$${item.price.toFixed(2)}</div>
+          </div>
+          <div class="desc">${escapeHtml(item.desc || '')}</div>
+          <div class="meta-bottom">
+            <button class="btn" onclick='addToCart("${item.id}")'>Add</button>
+            <button class="btn ghost" onclick='viewQuick("${item.id}")'>Quick</button>
+          </div>
+        </div>
+      `;
+      return el;
+    }
+
+    function renderAll(){
+      const mg = document.getElementById('menuGrid');
+      menu.forEach(it => mg.appendChild(createCard(it, 'm')));
+      const dg = document.getElementById('drinksGrid');
+      drinks.forEach(it => dg.appendChild(createCard(it, 'd')));
+      const sg = document.getElementById('dessertsGrid');
+      desserts.forEach(it => sg.appendChild(createCard(it, 's')));
+    }
+
+    // Simple cart logic
+    const allItems = [...menu, ...drinks, ...desserts];
+    const cart = {}; // id -> qty
+
+    function addToCart(id){
+      cart[id] = (cart[id] || 0) + 1;
+      updateCartUI();
+    }
+
+    function removeFromCart(id){
+      delete cart[id];
+      updateCartUI();
+    }
+
+    function changeQty(id, delta){
+      const q = (cart[id] || 0) + delta;
+      if(q < 1){ removeFromCart(id); return; }
+      cart[id] = q;
+      updateCartUI();
+    }
+
+    function clearCart(){
+      for(const k in cart) delete cart[k];
+      updateCartUI();
+    }
+
+    function updateCartUI(){
+      const list = document.getElementById('cartList');
+      list.innerHTML = '';
+      let subtotal = 0;
+      const ids = Object.keys(cart);
+      if(ids.length === 0){
+        list.innerHTML = '<div class="muted">Your cart is empty. Add items to begin.</div>';
+      } else {
+        ids.forEach(id => {
+          const item = allItems.find(x=>x.id===id);
+          const qty = cart[id];
+          subtotal += item.price * qty;
+          const el = document.createElement('div');
+          el.className = 'cart-item';
+          el.innerHTML = `
+            <img src="${item.img}" alt="${escapeHtml(item.name)}">
+            <div class="cart-meta">
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <div><strong>${escapeHtml(item.name)}</strong><div class="muted" style="font-size:12px">$${item.price.toFixed(2)}</div></div>
+                <div class="muted">$${(item.price*qty).toFixed(2)}</div>
+              </div>
+              <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center">
+                <div class="qty">
+                  <button onclick='changeQty("${id}", -1)'>−</button>
+                  <div style="padding:6px 8px; min-width:28px; text-align:center; background:#f8fafc; border-radius:6px">${qty}</div>
+                  <button onclick='changeQty("${id}", 1)'>＋</button>
+                </div>
+                <button class="btn ghost" onclick='removeFromCart("${id}")'>Remove</button>
+              </div>
+            </div>
+          `;
+          list.appendChild(el);
+        });
+      }
+
+      document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+      document.getElementById('delivery').textContent = `$${(ids.length>0?deliveryFee:0).toFixed(2)}`;
+      const total = subtotal + (ids.length>0?deliveryFee:0);
+      document.getElementById('totalPrice').textContent = `$${total.toFixed(2)}`;
+    }
+
+    function placeOrder(){
+      const ids = Object.keys(cart);
+      if(ids.length===0){ alert('Cart is empty. Add items to place an order.'); return; }
+      const name = document.getElementById('customerName').value.trim();
+      const phone = document.getElementById('customerPhone').value.trim();
+      if(!name || !phone){ if(!confirm('Continue without name/phone?')) return; }
+
+      const items = ids.map(id=>{
+        const item = allItems.find(x=>x.id===id);
+        return {id, name:item.name, qty:cart[id], price:item.price};
+      });
+      const subtotal = items.reduce((s,i)=>s + i.price * i.qty, 0);
+      const total = subtotal + deliveryFee;
+
+      // For demo, show order summary JSON and clear cart
+      const order = {customer:{name,phone}, items, subtotal:subtotal.toFixed(2), delivery:deliveryFee.toFixed(2), total:total.toFixed(2), eta:'30-45 min'};
+      alert('Order placed (demo):\\n' + JSON.stringify(order, null, 2));
+      console.log('Order:', order);
+      clearCart();
+      document.getElementById('customerName').value = '';
+      document.getElementById('customerPhone').value = '';
+    }
+
+    function viewQuick(id){
+      const item = allItems.find(x=>x.id===id);
+      alert(item.name + '\\n\\n' + (item.desc||'') + '\\n\\nPrice: $' + item.price.toFixed(2));
+    }
+
+    // small escape helper for injection-safe text nodes
+    function escapeHtml(str){
+      if(!str) return '';
+      return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // Initialize
+    renderAll();
+    updateCartUI();
+  </script>
+</body>
+</html>
